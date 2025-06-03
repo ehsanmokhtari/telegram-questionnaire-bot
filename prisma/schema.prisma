@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            BigInt         @id
+  username      String?
+  firstName     String
+  lastName      String?
+  isAdmin       Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  questionnaires Questionnaire[]
+  responses      Response[]
+  
+  @@map("users")
+}
+
+model Questionnaire {
+  id            String         @id @default(cuid())
+  title         String
+  description   String?
+  creatorId     BigInt
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  creator       User           @relation(fields: [creatorId], references: [id])
+  questions     Question[]
+  responses     Response[]
+  
+  @@index([creatorId])
+  @@map("questionnaires")
+}
+
+model Question {
+  id              String         @id @default(cuid())
+  questionnaireId String
+  text            String
+  type            QuestionType
+  order           Int
+  isRequired      Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  
+  questionnaire   Questionnaire  @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+  options         Option[]
+  answers         Answer[]
+  
+  @@index([questionnaireId])
+  @@map("questions")
+}
+
+model Option {
+  id          String    @id @default(cuid())
+  questionId  String
+  text        String
+  order       Int
+  
+  question    Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answers     Answer[]
+  
+  @@index([questionId])
+  @@map("options")
+}
+
+model Response {
+  id              String         @id @default(cuid())
+  questionnaireId String
+  userId          BigInt
+  completedAt     DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  questionnaire   Questionnaire  @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+  user            User           @relation(fields: [userId], references: [id])
+  answers         Answer[]
+  
+  @@unique([questionnaireId, userId])
+  @@index([questionnaireId])
+  @@index([userId])
+  @@map("responses")
+}
+
+model Answer {
+  id          String    @id @default(cuid())
+  responseId  String
+  questionId  String
+  textValue   String?
+  optionIds   String[]
+  createdAt   DateTime  @default(now())
+  
+  response    Response  @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  question    Question  @relation(fields: [questionId], references: [id])
+  options     Option[]
+  
+  @@unique([responseId, questionId])
+  @@index([responseId])
+  @@index([questionId])
+  @@map("answers")
+}
+
+enum QuestionType {
+  TEXT
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+}
