@@ -4,6 +4,8 @@ import { QuestionnaireService } from "../services/questionnaire.service"
 import { ResponseService } from "../services/response.service"
 import { InlineKeyboard } from "grammy"
 import logger from "../utils/logger"
+import { MediaUtils } from "../utils/media"
+import { QuestionType } from "@prisma/client"
 
 export async function handleStart(ctx: MyContext) {
   try {
@@ -169,7 +171,11 @@ export async function handleResults(ctx: MyContext) {
 
     // Aggregate results by question
     for (const question of results.questionnaire.questions) {
-      message += `*${question.text}*\n`
+      const icon = MediaUtils.getQuestionTypeIcon(question.type)
+      const required = question.isRequired ? "✅" : "⭕"
+      const media = question.mediaType ? ` ${MediaUtils.getMediaTypeIcon(question.mediaType)}` : ""
+
+      message += `*${icon} ${question.text}* ${required}${media}\n`
 
       if (question.type === "TEXT") {
         const answers = results.responses
@@ -184,6 +190,26 @@ export async function handleResults(ctx: MyContext) {
           })
         } else {
           message += "No responses yet\n"
+        }
+      } else if (
+        [
+          QuestionType.FILE_UPLOAD,
+          QuestionType.IMAGE_UPLOAD,
+          QuestionType.VIDEO_UPLOAD,
+          QuestionType.AUDIO_UPLOAD,
+        ].includes(question.type)
+      ) {
+        const mediaAnswers = results.responses
+          .flatMap((r) => r.answers)
+          .filter((a) => a.questionId === question.id && a.mediaFileId)
+
+        message += `Media files received: ${mediaAnswers.length}\n`
+        mediaAnswers.slice(0, 3).forEach((a) => {
+          const mediaIcon = a.mediaType ? MediaUtils.getMediaTypeIcon(a.mediaType) : "📎"
+          message += `• ${mediaIcon} ${a.mediaFileName || "File"}\n`
+        })
+        if (mediaAnswers.length > 3) {
+          message += `... and ${mediaAnswers.length - 3} more\n`
         }
       } else {
         // Count option selections

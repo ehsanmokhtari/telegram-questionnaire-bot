@@ -1,6 +1,6 @@
 import type { Conversation, ConversationFlavor } from "@grammyjs/conversations"
 import type { Context as BaseContext, SessionFlavor } from "grammy"
-import type { QuestionType } from "@prisma/client"
+import type { QuestionType, MediaType } from "@prisma/client"
 
 export interface SessionData {
   currentQuestionnaireId?: string
@@ -22,6 +22,9 @@ export interface CreateQuestionData {
   type: QuestionType
   options?: string[]
   isRequired?: boolean
+  mediaType?: MediaType
+  mediaFileId?: string
+  mediaFileName?: string
 }
 
 export interface QuestionnaireWithDetails {
@@ -34,10 +37,19 @@ export interface QuestionnaireWithDetails {
     type: QuestionType
     order: number
     isRequired: boolean
+    mediaType: MediaType | null
+    mediaFileId: string | null
+    mediaFileName: string | null
     options: {
       id: string
       text: string
       order: number
     }[]
   }[]
+}
+
+export interface MediaFile {
+  fileId: string
+  fileName?: string
+  type: MediaType
 }

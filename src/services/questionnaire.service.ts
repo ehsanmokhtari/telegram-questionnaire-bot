@@ -17,6 +17,9 @@ export class QuestionnaireService {
               type: q.type,
               order: index,
               isRequired: q.isRequired ?? true,
+              mediaType: q.mediaType,
+              mediaFileId: q.mediaFileId,
+              mediaFileName: q.mediaFileName,
               options: q.options
                 ? {
                     create: q.options.map((opt, optIndex) => ({

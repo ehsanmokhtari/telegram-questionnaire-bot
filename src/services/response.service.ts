@@ -1,4 +1,4 @@
-import type { Response, Answer } from "@prisma/client"
+import type { Response, Answer, MediaType } from "@prisma/client"
 import prisma from "../database/prisma"
 import logger from "../utils/logger"
 
@@ -30,6 +30,9 @@ export class ResponseService {
     data: {
       textValue?: string
       optionIds?: string[]
+      mediaType?: MediaType
+      mediaFileId?: string
+      mediaFileName?: string
     },
   ): Promise<Answer> {
     try {
@@ -45,10 +48,16 @@ export class ResponseService {
           questionId,
           textValue: data.textValue,
           optionIds: data.optionIds || [],
+          mediaType: data.mediaType,
+          mediaFileId: data.mediaFileId,
+          mediaFileName: data.mediaFileName,
         },
         update: {
           textValue: data.textValue,
           optionIds: data.optionIds || [],
+          mediaType: data.mediaType,
+          mediaFileId: data.mediaFileId,
+          mediaFileName: data.mediaFileName,
         },
       })
     } catch (error) {

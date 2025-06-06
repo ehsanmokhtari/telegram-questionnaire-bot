@@ -48,6 +48,11 @@ model Question {
   isRequired      Boolean        @default(true)
   createdAt       DateTime       @default(now())
   
+  // Media fields for question
+  mediaType       MediaType?
+  mediaFileId     String?
+  mediaFileName   String?
+  
   questionnaire   Questionnaire  @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
   options         Option[]
   answers         Answer[]
@@ -95,6 +100,11 @@ model Answer {
   optionIds   String[]
   createdAt   DateTime  @default(now())
   
+  // Media fields for answer
+  mediaType       MediaType?
+  mediaFileId     String?
+  mediaFileName   String?
+  
   response    Response  @relation(fields: [responseId], references: [id], onDelete: Cascade)
   question    Question  @relation(fields: [questionId], references: [id])
   options     Option[]
@@ -109,4 +119,15 @@ enum QuestionType {
   TEXT
   SINGLE_CHOICE
   MULTIPLE_CHOICE
+  FILE_UPLOAD
+  IMAGE_UPLOAD
+  VIDEO_UPLOAD
+  AUDIO_UPLOAD
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
 }
